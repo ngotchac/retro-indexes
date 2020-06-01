@@ -1,0 +1,43 @@
+{
+	"compilerOptions": {
+	"target": "es5",
+	"lib": [
+		"dom",
+		"dom.iterable",
+		"esnext"
+	],
+	"allowJs": true,
+	"skipLibCheck": true,
+	"strict": true,
+	"forceConsistentCasingInFileNames": true,
+	"downlevelIteration": true,
+	"noEmit": true,
+	"esModuleInterop": true,
+	"module": "esnext",
+	"moduleResolution": "node",
+	"resolveJsonModule": true,
+	"isolatedModules": true,
+	"emitDecoratorMetadata": true,
+	"experimentalDecorators": true,
+	"jsx": "preserve",
+	"plugins": [
+		{
+			"transform": "typescript-plugin-styled-components",
+			"type": "config",
+
+			// other typescript-plugin-styled-components options can be added here
+			"minify": true,
+			"ssr": true
+		}
+	]
+	},
+	"exclude": [
+		"node_modules"
+	],
+	"include": [
+		"next-env.d.ts",
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"types/**/*.ts",
+	]
+}

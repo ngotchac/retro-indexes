@@ -1,0 +1,46 @@
+{
+  "name": "retro-indexes",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "ts-node -P tsconfig.server.json src/server/main.ts | pino-colada",
+    "build": "next build && tsc -p tsconfig.server.json",
+    "start": "NODE_ENV=production node build/main.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@koa/router": "^8.0.8",
+    "@types/react-highcharts": "^16.0.2",
+    "antd": "^4.2.5",
+    "axios": "^0.19.2",
+    "highcharts": "^8.1.0",
+    "koa": "^2.12.0",
+    "koa-pino-logger": "^3.0.0",
+    "next": "^9.4.4",
+    "pino": "^6.3.0",
+    "pino-colada": "^1.6.1",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-highcharts": "^16.1.0",
+    "styled-components": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.11.3",
+    "@types/koa__router": "^8.0.2",
+    "@types/node": "^14.0.5",
+    "@types/pino": "^6.0.1",
+    "@types/react": "^16.9.35",
+    "@types/styled-components": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^3.0.2",
+    "@typescript-eslint/parser": "^3.0.2",
+    "babel-plugin-styled-components": "^1.10.7",
+    "eslint": "^7.1.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.20.0",
+    "prettier": "^2.0.5",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.9.3",
+    "typescript-plugin-styled-components": "^1.4.4"
+  },
+  "license": "ISC"
+}
