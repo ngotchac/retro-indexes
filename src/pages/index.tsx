@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Tabs, Divider } from "antd";
 
-import PortfolioForm from "../components/portfolio-form";
+import BacktestDrift from "../components/backtest-drift";
+import BacktestRolling from "../components/backtest-rolling";
 import BacktestStats from "../components/backtest-stats";
 import BacktestValuation from "../components/backtest-valuation";
-import BacktestDrift from "../components/backtest-drift";
+import PortfolioForm from "../components/portfolio-form";
 
 import { Portfolio, Backtest } from "../types";
 import { runBacktest } from "../backtest";
@@ -16,7 +17,7 @@ export default function Home() {
 		if (portfolio) {
 			const startedAt = Date.now();
 			const backtest = runBacktest(portfolio);
-			console.log("Ran backtest in", (Date.now() - startedAt), "ms");
+			console.log("Ran backtest in", Date.now() - startedAt, "ms");
 			setBacktest(backtest);
 		} else {
 			setBacktest(null);
@@ -39,27 +40,14 @@ export default function Home() {
 						<Tabs.TabPane tab="Portfolio Drift" key="drift">
 							<BacktestDrift backtest={backtest} />
 						</Tabs.TabPane>
+						{backtest.rollingData && (
+							<Tabs.TabPane tab="Portfolio Rolling Returns" key="rolling">
+								<BacktestRolling backtest={backtest} rolling={backtest.rollingData} />
+							</Tabs.TabPane>
+						)}
 					</Tabs>
 				</>
 			)}
-
-			{/* {backtest && (
-				<Table
-					columns={[
-						{ title: "Year", dataIndex: "year", key: "year" },
-						{ title: "Month", dataIndex: "month", key: "month" },
-						{ title: "Value", dataIndex: "value", key: "value" },
-						{ title: "Cash Flow", dataIndex: "cashFlow", key: "cashFlow" },
-					]}
-					dataSource={backtest.dataPoints.map((point) => ({
-						key: point.date.getTime().toString(),
-						year: point.date.getFullYear(),
-						month: point.date.getMonth() + 1,
-						value: Math.round(point.value * 100) / 100,
-						cashFlow: point.cashFlow,
-					}))}
-				/>
-			)} */}
 		</div>
 	);
 }

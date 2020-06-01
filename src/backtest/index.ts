@@ -1,4 +1,11 @@
-import { PortfolioDataPoint, PortfolioAnalysis, Portfolio, Backtest } from "../types";
+import {
+	PortfolioDataPoint,
+	PortfolioAnalysis,
+	Portfolio,
+	Backtest,
+	IndexDataPoint,
+	RollingBacktestData,
+} from "../types";
 
 function getCagr(dataPoints: PortfolioDataPoint[]) {
 	const first = dataPoints[0];
@@ -102,32 +109,14 @@ function isSameDay(dateA: Date, dateB: Date) {
 	return Math.abs(dateA.getTime() - dateB.getTime()) < 1_000 * 3600 * 24 * 7;
 }
 
-function getPortfolioData(portfolio: Portfolio, monthlyIn: number, initialIn: number) {
+function getPortfolioData(portfolio: Portfolio, assetsPoints: IndexDataPoint[][]) {
+	const initialIn = portfolio.initialCash;
+	const monthlyIn = portfolio.monthlyCash;
+
+	// console.log(portfolio.assets);
+	const monthlyFees = portfolio.assets.map((a) => (1 - a.fee) ** (1 / 12));
+
 	const rebalancingMonths = portfolio.rebalancing;
-	const startDate = new Date(Math.max(...portfolio.assets.map((a) => a.data[0].date.getTime())));
-	const endDate = new Date(Math.min(...portfolio.assets.map((a) => a.data.slice(-1)[0].date.getTime())));
-
-	const assetsPoints = portfolio.assets.map((a) => {
-		const startIndex = a.data.findIndex(({ date }) => isSameDay(date, startDate));
-		const endIndex = a.data.findIndex(({ date }) => isSameDay(date, endDate));
-
-		// console.log({ startIndex, endIndex, startDate, endDate });
-
-		return a.data.slice(startIndex, endIndex + 1);
-	});
-
-	// console.log(portfolio);
-
-	const pointsNum = new Set(assetsPoints.map((v) => v.length));
-	if (pointsNum.size !== 1) {
-		throw new Error(
-			`Failed to run backtest. Assets don't have the same number of points: ${[...pointsNum.values()].join(
-				" ; ",
-			)}.`,
-		);
-	}
-
-	console.log(`Running backtest on ${assetsPoints[0].length} points`);
 
 	const wallet = assetsPoints.map(() => 0);
 	let monthsUntilRebalancing = rebalancingMonths ? rebalancingMonths : null;
@@ -163,6 +152,10 @@ function getPortfolioData(portfolio: Portfolio, monthlyIn: number, initialIn: nu
 			monthsUntilRebalancing -= 1;
 		}
 
+		wallet.map((_, assetIdx) => {
+			wallet[assetIdx] = wallet[assetIdx] * monthlyFees[assetIdx];
+		});
+
 		// Get total value
 		const assetValues = wallet.map((assetShare, assetIdx) => {
 			return assetShare * assetsPoints[assetIdx][pointIdx].value;
@@ -183,12 +176,73 @@ function getPortfolioData(portfolio: Portfolio, monthlyIn: number, initialIn: nu
 }
 
 export function runBacktest(portfolio: Portfolio): Backtest {
-	const monthlyBuy = getPortfolioData(portfolio, 100, 100);
-	const singleBuy = getPortfolioData(portfolio, 0, 100);
+	const startDate = new Date(Math.max(...portfolio.assets.map((a) => a.data[0].date.getTime())));
+	const endDate = new Date(Math.min(...portfolio.assets.map((a) => a.data.slice(-1)[0].date.getTime())));
+
+	const assetsPoints = portfolio.assets.map((a) => {
+		const startIndex = a.data.findIndex(({ date }) => isSameDay(date, startDate));
+		const endIndex = a.data.findIndex(({ date }) => isSameDay(date, endDate));
+
+		// console.log({ startIndex, endIndex, startDate, endDate });
+
+		return a.data.slice(startIndex, endIndex + 1);
+	});
+
+	// console.log(portfolio);
+
+	const pointsNum = new Set(assetsPoints.map((v) => v.length));
+	if (pointsNum.size !== 1) {
+		throw new Error(
+			`Failed to run backtest. Assets don't have the same number of points: ${[...pointsNum.values()].join(
+				" ; ",
+			)}.`,
+		);
+	}
+
+	console.log(`Running backtest on ${assetsPoints[0].length} points`);
+
+	const monthlyBuy = getPortfolioData(portfolio, assetsPoints);
+	const singleBuy = getPortfolioData(
+		{
+			...portfolio,
+			monthlyCash: 0,
+		},
+		assetsPoints,
+	);
 
 	const analysis = analyseData(monthlyBuy, singleBuy);
-	return {
+	const backtest: Backtest = {
 		dataPoints: monthlyBuy,
 		analysis,
 	};
+
+	// Run the backtest for each available investment duration (in years)
+	if (portfolio.investmentDuration) {
+		const { investmentDuration } = portfolio;
+		const durationMonths = investmentDuration * 12;
+		const numTests = assetsPoints[0].length - durationMonths;
+		const rollingData: RollingBacktestData = [];
+
+		for (let testIdx = 0; testIdx < numTests; testIdx += 1) {
+			const testAssetsPoints = assetsPoints.map((assetPoints) =>
+				assetPoints.slice(testIdx, testIdx + durationMonths + 1),
+			);
+			const testData = getPortfolioData(portfolio, testAssetsPoints);
+			const testMwrr = getMwrr(testData);
+
+			if (!Number.isFinite(testMwrr)) {
+				console.log("Failed to get rolling-MWRR", testIdx);
+			} else {
+				rollingData.push({
+					startDate: testAssetsPoints[0][0].date,
+					endDate: testAssetsPoints[0].slice(-1)[0].date,
+					mwrr: testMwrr,
+				});
+			}
+		}
+
+		backtest.rollingData = rollingData;
+	}
+
+	return backtest;
 }

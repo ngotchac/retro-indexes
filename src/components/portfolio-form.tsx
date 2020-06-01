@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Typography, Form, Button, Row, Col, Cascader, Input, Switch, Slider } from "antd";
+import { Typography, Form, Button, Row, Col, Cascader, Input, Slider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Store } from "antd/lib/form/interface";
 import { ShowSearchType, CascaderOptionType } from "antd/lib/cascader";
@@ -20,6 +20,28 @@ const assetsOptions: CascaderOptionType[] = [
 				value: "msci.world",
 				label: "MSCI World",
 			},
+			{
+				value: "msci.world-small-cap",
+				label: "MSCI World Small Cap",
+			},
+		],
+	},
+	{
+		value: "stocks",
+		label: "Stocks",
+		children: [
+			{
+				value: "sp500",
+				label: "S&P 500",
+			},
+			{
+				value: "nasdaq",
+				label: "NASDAQ Composite",
+			},
+			{
+				value: "NAESX",
+				label: "Vanguard Small Cap Index (NAESX)",
+			},
 		],
 	},
 	{
@@ -39,6 +61,10 @@ const assetsOptions: CascaderOptionType[] = [
 			{
 				value: "livret-a",
 				label: "Livret A",
+			},
+			{
+				value: "fonds-euros",
+				label: "Fonds Euros",
 			},
 		],
 	},
@@ -64,11 +90,14 @@ function PortfolioForm(props: PortfolioFormProps) {
 		const data = values as {
 			assets?: {
 				allocation?: string;
+				fee?: string;
 				asset?: string[];
 			}[];
 			rebalancing: number;
+			investmentDuration: number;
 		};
 
+		console.log(data);
 		const portfolioAssets = (data.assets || [])
 			.map((asset) => {
 				if (!asset.asset || !isNumber(asset.allocation)) {
@@ -78,9 +107,10 @@ function PortfolioForm(props: PortfolioFormProps) {
 				return {
 					index: asset.asset.slice(-1)[0],
 					allocation: parseInt(asset.allocation) / 100,
+					fee: isNumber(asset.fee) ? parseFloat(asset.fee) / 100 : 0,
 				};
 			})
-			.filter((v) => v !== null) as { index: string; allocation: number }[];
+			.filter((v) => v !== null) as { index: string; allocation: number; fee: number }[];
 
 		const sumAllocations = portfolioAssets.reduce((sum, { allocation }) => sum + allocation, 0);
 
@@ -94,10 +124,11 @@ function PortfolioForm(props: PortfolioFormProps) {
 			try {
 				console.log("Fetching portfolio", portfolioAssets);
 				const assets = await Promise.all(
-					portfolioAssets.map(async ({ index, allocation }) => {
+					portfolioAssets.map(async ({ index, allocation, fee }) => {
 						const indexData = await fetchIndexData(index);
 						const asset: PortfolioAsset = {
 							allocation,
+							fee,
 							data: indexData,
 						};
 
@@ -108,6 +139,9 @@ function PortfolioForm(props: PortfolioFormProps) {
 				const portfolio: Portfolio = {
 					assets,
 					rebalancing: data.rebalancing > 0 ? data.rebalancing : null,
+					investmentDuration: data.investmentDuration > 0 ? data.investmentDuration : null,
+					initialCash: 100,
+					monthlyCash: 100,
 				};
 
 				props.onSetPortfolio(portfolio);
@@ -154,7 +188,7 @@ function PortfolioForm(props: PortfolioFormProps) {
 													/>
 												</Form.Item>
 											</Col>
-											<Col flex={"none"}>
+											<Col>
 												<Form.Item
 													{...field}
 													name={[field.name, "allocation"]}
@@ -169,12 +203,29 @@ function PortfolioForm(props: PortfolioFormProps) {
 													validateTrigger={["onChange", "onBlur"]}
 												>
 													<Input
-														// defaultValue={100}
 														min={0}
 														max={100}
 														type="number"
 														style={{ width: "8em" }}
 														addonAfter="%"
+													/>
+												</Form.Item>
+											</Col>
+											<Col>
+												<Form.Item
+													{...field}
+													name={[field.name, "fee"]}
+													fieldKey={([field.fieldKey, "fee"] as unknown) as number}
+													noStyle
+												>
+													<Input
+														min={0}
+														max={100}
+														type="number"
+														style={{ width: "12em" }}
+														addonBefore="Fee"
+														addonAfter="%"
+														step={0.01}
 													/>
 												</Form.Item>
 											</Col>
@@ -198,6 +249,7 @@ function PortfolioForm(props: PortfolioFormProps) {
 										onClick={() => {
 											add({
 												allocation: 100,
+												fee: 0.3,
 											});
 										}}
 									>
@@ -222,6 +274,23 @@ function PortfolioForm(props: PortfolioFormProps) {
 									3: "Quarterly",
 									6: "Semi-Annually",
 									12: "Annually",
+								}}
+							/>
+						</Form.Item>
+					</Col>
+				</Row>
+				<Row gutter={8}>
+					<Col span={12}>
+						<Form.Item name="investmentDuration" label="Investment duration">
+							<Slider
+								min={0}
+								max={20}
+								marks={{
+									0: "Disabled",
+									3: "3 years",
+									5: "5 years",
+									10: "10 years",
+									20: "20 years",
 								}}
 							/>
 						</Form.Item>

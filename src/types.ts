@@ -7,12 +7,16 @@ export type IndexData = IndexDataPoint[];
 
 export interface PortfolioAsset {
 	allocation: number;
+	fee: number;
 	data: IndexData;
 }
 
 export interface Portfolio {
 	assets: PortfolioAsset[];
 	rebalancing: number | null;
+	investmentDuration: number | null;
+	initialCash: number;
+	monthlyCash: number;
 }
 
 export interface PortfolioDataPoint {
@@ -30,7 +34,16 @@ export interface PortfolioAnalysis {
 	stdev: number;
 }
 
+export interface RollingBacktestDataPoint {
+	startDate: Date;
+	endDate: Date;
+	mwrr: number;
+}
+
+export type RollingBacktestData = RollingBacktestDataPoint[];
+
 export interface Backtest {
 	dataPoints: PortfolioDataPoint[];
 	analysis: PortfolioAnalysis;
+	rollingData?: RollingBacktestData;
 }
