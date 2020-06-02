@@ -54,6 +54,8 @@ const InnerContent = styled.div`
 	/* background: #141414; */
 	padding: 24px;
 	min-height: 380px;
+	max-width: 1024px;
+	margin: 3em auto;
 `;
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -68,9 +70,6 @@ function MyApp({ Component, pageProps }: AppProps) {
 				</Menu>
 			</Header>
 			<Content className="site-layout">
-				<Breadcrumb style={{ margin: "16px 0" }}>
-					<Breadcrumb.Item>Home</Breadcrumb.Item>
-				</Breadcrumb>
 				<InnerContent>
 					<Component {...pageProps} />
 				</InnerContent>

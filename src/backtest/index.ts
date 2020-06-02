@@ -176,8 +176,15 @@ function getPortfolioData(portfolio: Portfolio, assetsPoints: IndexDataPoint[][]
 }
 
 export function runBacktest(portfolio: Portfolio): Backtest {
-	const startDate = new Date(Math.max(...portfolio.assets.map((a) => a.data[0].date.getTime())));
-	const endDate = new Date(Math.min(...portfolio.assets.map((a) => a.data.slice(-1)[0].date.getTime())));
+	const minStartDate = new Date(Math.max(...portfolio.assets.map((a) => a.data[0].date.getTime())));
+	const maxEndDate = new Date(Math.min(...portfolio.assets.map((a) => a.data.slice(-1)[0].date.getTime())));
+
+	const startDate = portfolio.startDate
+		? new Date(Math.max(minStartDate.getTime(), portfolio.startDate.getTime()))
+		: minStartDate;
+	const endDate = portfolio.startDate
+		? new Date(Math.min(maxEndDate.getTime(), portfolio.endDate.getTime()))
+		: maxEndDate;
 
 	const assetsPoints = portfolio.assets.map((a) => {
 		const startIndex = a.data.findIndex(({ date }) => isSameDay(date, startDate));

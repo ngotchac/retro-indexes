@@ -17,6 +17,8 @@ export interface Portfolio {
 	investmentDuration: number | null;
 	initialCash: number;
 	monthlyCash: number;
+	startDate?: Date;
+	endDate?: Date;
 }
 
 export interface PortfolioDataPoint {

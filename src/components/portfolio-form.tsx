@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Typography, Form, Button, Row, Col, Cascader, Input, Slider } from "antd";
+import { Typography, Form, Button, Row, Col, Cascader, Input, Slider, InputNumber, DatePicker } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Store } from "antd/lib/form/interface";
 import { ShowSearchType, CascaderOptionType } from "antd/lib/cascader";
+import { Moment } from "moment";
 
 import { fetchIndexData } from "../api";
 import { PortfolioAsset, Portfolio } from "../types";
@@ -60,11 +61,15 @@ const assetsOptions: CascaderOptionType[] = [
 		children: [
 			{
 				value: "livret-a",
-				label: "Livret A",
+				label: "Livret A (FR)",
 			},
 			{
 				value: "fonds-euros",
-				label: "Fonds Euros",
+				label: "Fonds Euros (FR)",
+			},
+			{
+				value: "TB3MS",
+				label: "90-days T-Bills (US)",
 			},
 		],
 	},
@@ -95,9 +100,13 @@ function PortfolioForm(props: PortfolioFormProps) {
 			}[];
 			rebalancing: number;
 			investmentDuration: number;
+			monthlyCash: number;
+			dateRange?: [Moment, Moment];
 		};
 
-		console.log(data);
+		console.log("Form data", data);
+		console.log(data.dateRange);
+
 		const portfolioAssets = (data.assets || [])
 			.map((asset) => {
 				if (!asset.asset || !isNumber(asset.allocation)) {
@@ -140,8 +149,11 @@ function PortfolioForm(props: PortfolioFormProps) {
 					assets,
 					rebalancing: data.rebalancing > 0 ? data.rebalancing : null,
 					investmentDuration: data.investmentDuration > 0 ? data.investmentDuration : null,
-					initialCash: 100,
-					monthlyCash: 100,
+					initialCash: data.monthlyCash || 100,
+					monthlyCash: data.monthlyCash,
+
+					startDate: data.dateRange ? data.dateRange[0].month(0).toDate() : undefined,
+					endDate: data.dateRange ? data.dateRange[1].month(11).toDate() : undefined,
 				};
 
 				props.onSetPortfolio(portfolio);
@@ -156,7 +168,7 @@ function PortfolioForm(props: PortfolioFormProps) {
 
 	return (
 		<div>
-			<Form onFinish={onFinish}>
+			<Form onFinish={onFinish} layout="vertical">
 				<Typography.Title level={4}>Assets</Typography.Title>
 				<Form.List name="assets">
 					{(fields, { add, remove }) => {
@@ -171,7 +183,7 @@ function PortfolioForm(props: PortfolioFormProps) {
 										help={formError}
 									>
 										<Row gutter={8}>
-											<Col span={12}>
+											<Col flex={1}>
 												<Form.Item
 													{...field}
 													name={[field.name, "asset"]}
@@ -229,7 +241,7 @@ function PortfolioForm(props: PortfolioFormProps) {
 													/>
 												</Form.Item>
 											</Col>
-											<Col span={6}>
+											<Col style={{ display: "flex", alignItems: "center" }}>
 												{fields.length > 1 ? (
 													<MinusCircleOutlined
 														style={{ margin: "0 8px" }}
@@ -262,41 +274,56 @@ function PortfolioForm(props: PortfolioFormProps) {
 				</Form.List>
 
 				<Typography.Title level={4}>Options</Typography.Title>
-				<Row gutter={8}>
-					<Col span={12}>
-						<Form.Item name="rebalancing" label="Rebalancing (in months)">
-							<Slider
-								min={0}
-								max={12}
-								marks={{
-									0: "Never",
-									1: "Monthly",
-									3: "Quarterly",
-									6: "Semi-Annually",
-									12: "Annually",
-								}}
-							/>
-						</Form.Item>
-					</Col>
-				</Row>
-				<Row gutter={8}>
-					<Col span={12}>
-						<Form.Item name="investmentDuration" label="Investment duration">
-							<Slider
-								min={0}
-								max={20}
-								marks={{
-									0: "Disabled",
-									3: "3 years",
-									5: "5 years",
-									10: "10 years",
-									20: "20 years",
-								}}
-							/>
-						</Form.Item>
-					</Col>
-				</Row>
 
+				<Form.Item name="dateRange" label="Start and end date">
+					<DatePicker.RangePicker picker="year" />
+				</Form.Item>
+
+				<Form.Item
+					name="monthlyCash"
+					label="Monthly contribution"
+					initialValue={1_000}
+					rules={[
+						{
+							required: true,
+							message: "Select a motnhly contribution",
+						},
+					]}
+				>
+					<InputNumber
+						formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+						parser={(value) => (value || "").replace(/\$\s?|(,*)/g, "")}
+					/>
+				</Form.Item>
+
+				<Form.Item name="rebalancing" label="Rebalancing (in months)">
+					<Slider
+						min={0}
+						max={12}
+						marks={{
+							0: "Never",
+							1: "Monthly",
+							3: "Quarterly",
+							6: "Semi-Annually",
+							12: "Annually",
+						}}
+						style={{ maxWidth: "min(90%, 50em)", marginLeft: "3em" }}
+					/>
+				</Form.Item>
+				<Form.Item name="investmentDuration" label="Investment duration">
+					<Slider
+						min={0}
+						max={20}
+						marks={{
+							0: "Disabled",
+							3: "3 years",
+							5: "5 years",
+							10: "10 years",
+							20: "20 years",
+						}}
+						style={{ maxWidth: "min(90%, 50em)", marginLeft: "3em" }}
+					/>
+				</Form.Item>
 				<Form.Item>
 					<Button type="primary" htmlType="submit" loading={isLoading}>
 						Run
