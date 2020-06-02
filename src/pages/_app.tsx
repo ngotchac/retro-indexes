@@ -1,6 +1,7 @@
 import React from "react";
 import { AppProps } from "next/app";
-import { Layout, Menu, Breadcrumb, Typography } from "antd";
+import { Layout, Menu, Typography } from "antd";
+import Head from "next/head";
 import styled from "styled-components";
 
 import "antd/dist/antd.css";
@@ -8,6 +9,7 @@ import "antd/dist/antd.css";
 // import "antd/dist/antd.compact.css";
 
 import "./styles.css";
+import GithubCorner from "../components/github-corner";
 
 const HeaderTitleContainer = styled.div`
 	display: inline-flex;
@@ -61,6 +63,10 @@ const InnerContent = styled.div`
 function MyApp({ Component, pageProps }: AppProps) {
 	return (
 		<LayoutContainer>
+			<Head>
+				<title>Retro Indexes</title>
+			</Head>
+			<GithubCorner />
 			<Header>
 				<HeaderTitleContainer>
 					<HeaderTitle>Retro Indexes</HeaderTitle>

@@ -182,7 +182,7 @@ export function runBacktest(portfolio: Portfolio): Backtest {
 	const startDate = portfolio.startDate
 		? new Date(Math.max(minStartDate.getTime(), portfolio.startDate.getTime()))
 		: minStartDate;
-	const endDate = portfolio.startDate
+	const endDate = portfolio.endDate
 		? new Date(Math.min(maxEndDate.getTime(), portfolio.endDate.getTime()))
 		: maxEndDate;
 

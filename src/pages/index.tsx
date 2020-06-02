@@ -11,15 +11,18 @@ import { Portfolio, Backtest } from "../types";
 import { runBacktest } from "../backtest";
 
 export default function Home() {
-	const [backtest, setBacktest] = useState<null | Backtest>();
+	const [backtest, setBacktest] = useState<null | Backtest>(null);
+	const [portfolio, setPortfolio] = useState<null | Portfolio>(null);
 
 	const handleSetPortfolio = (portfolio: Portfolio | null) => {
 		if (portfolio) {
+			setPortfolio(portfolio);
 			const startedAt = Date.now();
 			const backtest = runBacktest(portfolio);
 			console.log("Ran backtest in", Date.now() - startedAt, "ms");
 			setBacktest(backtest);
 		} else {
+			setPortfolio(null);
 			setBacktest(null);
 		}
 	};
@@ -42,7 +45,7 @@ export default function Home() {
 			</p>
 			<PortfolioForm onSetPortfolio={handleSetPortfolio} />
 
-			{backtest && (
+			{backtest && portfolio && (
 				<>
 					<BacktestStats backtest={backtest} />
 					<Divider />
@@ -57,7 +60,11 @@ export default function Home() {
 						)}
 						{backtest.rollingData && (
 							<Tabs.TabPane tab="Portfolio Rolling Returns" key="rolling">
-								<BacktestRolling backtest={backtest} rolling={backtest.rollingData} />
+								<BacktestRolling
+									backtest={backtest}
+									rolling={backtest.rollingData}
+									portfolio={portfolio}
+								/>
 							</Tabs.TabPane>
 						)}
 					</Tabs>
