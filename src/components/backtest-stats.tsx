@@ -2,10 +2,11 @@ import React from "react";
 import { Row, Col, Card, Statistic, Tooltip, Popover } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 
-import { Backtest } from "../types";
+import { Backtest, Portfolio } from "../types";
 
 interface BacktestStatsProps {
 	backtest: Backtest;
+	portfolio: Portfolio;
 }
 
 interface MoreInfoProps {
@@ -76,48 +77,52 @@ function BacktestStats(props: BacktestStatsProps) {
 					/>
 				</Card>
 			</Col>
-			<Col>
-				<Card>
-					<Statistic
-						title={
-							<>
-								<MoreInfo
-									title="Time-Weighted Rate of Return"
-									summary="The time-weighted rate of return (TWR) is a measure of the compound rate of growth in a portfolio."
-									link="https://www.investopedia.com/terms/t/time-weightedror.asp"
-								/>
-								{"  "}TWR
-							</>
-						}
-						value={backtest.analysis.twrr * 100}
-						precision={2}
-						// valueStyle={{ color: "#cf1322" }}
-						// prefix={<ArrowDownOutlined />}
-						suffix="%"
-					/>
-				</Card>
-			</Col>
-			<Col>
-				<Card>
-					<Statistic
-						title={
-							<>
-								<MoreInfo
-									title="Money-Weighted Rate of Return"
-									summary="Money-weighted rate of return is a measure of the performance of an investment."
-									link="https://www.investopedia.com/terms/m/money-weighted-return.asp"
-								/>
-								{"  "}MWRR
-							</>
-						}
-						value={backtest.analysis.mwrr * 100}
-						precision={2}
-						// valueStyle={{ color: "#cf1322" }}
-						// prefix={<ArrowDownOutlined />}
-						suffix="%"
-					/>
-				</Card>
-			</Col>
+			{backtest.analysis.twrr !== undefined && (
+				<Col>
+					<Card>
+						<Statistic
+							title={
+								<>
+									<MoreInfo
+										title="Time-Weighted Rate of Return"
+										summary="The time-weighted rate of return (TWR) is a measure of the compound rate of growth in a portfolio."
+										link="https://www.investopedia.com/terms/t/time-weightedror.asp"
+									/>
+									{"  "}TWR
+								</>
+							}
+							value={backtest.analysis.twrr * 100}
+							precision={2}
+							// valueStyle={{ color: "#cf1322" }}
+							// prefix={<ArrowDownOutlined />}
+							suffix="%"
+						/>
+					</Card>
+				</Col>
+			)}
+			{backtest.analysis.mwrr !== undefined && (
+				<Col>
+					<Card>
+						<Statistic
+							title={
+								<>
+									<MoreInfo
+										title="Money-Weighted Rate of Return"
+										summary="Money-weighted rate of return is a measure of the performance of an investment."
+										link="https://www.investopedia.com/terms/m/money-weighted-return.asp"
+									/>
+									{"  "}MWRR
+								</>
+							}
+							value={backtest.analysis.mwrr * 100}
+							precision={2}
+							// valueStyle={{ color: "#cf1322" }}
+							// prefix={<ArrowDownOutlined />}
+							suffix="%"
+						/>
+					</Card>
+				</Col>
+			)}
 			<Col>
 				<Card>
 					<Statistic

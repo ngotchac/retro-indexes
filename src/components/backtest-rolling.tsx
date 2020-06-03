@@ -49,7 +49,7 @@ function BacktestRolling(props: BacktestRollingProps) {
 		<>
 			<p>
 				This shows what would have been the returns of a monthly contribution to the given portfolio, over{" "}
-				{props.portfolio.rebalancing || 0} years.
+				{props.portfolio.investmentDuration || 0} years.
 			</p>
 			<p>The x-axis on the following graph is the invesestment start-date.</p>
 			<Statistic title="Average MWRR" precision={2} suffix="%" value={avgMwrr * 100} />

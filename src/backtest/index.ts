@@ -36,26 +36,26 @@ function getTwrr(dataPoints: PortfolioDataPoint[]) {
 	return twrr ** (1 / duration) - 1;
 }
 
-/// Modified Dietz method
-/// @see https://en.wikipedia.org/wiki/Modified_Dietz_method
-function getMdm(dataPoints: PortfolioDataPoint[]) {
-	const first = dataPoints[0];
-	const last = dataPoints[dataPoints.length - 1];
-	const years = (last.date.getTime() - first.date.getTime()) / (1_000 * 3600 * 24 * 365.25);
+// /// Modified Dietz method
+// /// @see https://en.wikipedia.org/wiki/Modified_Dietz_method
+// function getMdm(dataPoints: PortfolioDataPoint[]) {
+// 	const first = dataPoints[0];
+// 	const last = dataPoints[dataPoints.length - 1];
+// 	const years = (last.date.getTime() - first.date.getTime()) / (1_000 * 3600 * 24 * 365.25);
 
-	const days = (last.date.getTime() - first.date.getTime()) / (1_000 * 3600 * 24);
-	const fi = dataPoints.map((p) => p.cashFlow);
-	const wi = dataPoints.map(({ date }) => {
-		return (last.date.getTime() - date.getTime()) / (1_000 * 3600 * 24) / days;
-	});
+// 	const days = (last.date.getTime() - first.date.getTime()) / (1_000 * 3600 * 24);
+// 	const fi = dataPoints.map((p) => p.cashFlow);
+// 	const wi = dataPoints.map(({ date }) => {
+// 		return (last.date.getTime() - date.getTime()) / (1_000 * 3600 * 24) / days;
+// 	});
 
-	const f = fi.reduce((sum, val) => sum + val, 0);
-	const w = wi.reduce((sum, val, idx) => sum + val * fi[idx], 0);
+// 	const f = fi.reduce((sum, val) => sum + val, 0);
+// 	const w = wi.reduce((sum, val, idx) => sum + val * fi[idx], 0);
 
-	const result = (last.value - first.value - f) / (first.value + w);
+// 	const result = (last.value - first.value - f) / (first.value + w);
 
-	return (result + 1) ** (1 / years) - 1;
-}
+// 	return (result + 1) ** (1 / years) - 1;
+// }
 
 /// @see https://en.wikipedia.org/wiki/Internal_rate_of_return
 function getMwrr(dataPoints: PortfolioDataPoint[]) {
@@ -95,12 +95,12 @@ function getStdev(dataPoints: PortfolioDataPoint[]) {
 	return stdev;
 }
 
-function analyseData(monthlyBuy: PortfolioDataPoint[], singleBuy: PortfolioDataPoint[]): PortfolioAnalysis {
+function analyseData(monthlyBuy: PortfolioDataPoint[] | null, singleBuy: PortfolioDataPoint[]): PortfolioAnalysis {
 	return {
-		cagr: getCagr(monthlyBuy),
-		twrr: getTwrr(monthlyBuy),
-		mdm: getMdm(monthlyBuy),
-		mwrr: getMwrr(monthlyBuy),
+		cagr: getCagr(monthlyBuy || singleBuy),
+		// mdm: getMdm(monthlyBuy),
+		twrr: monthlyBuy ? getTwrr(monthlyBuy) : undefined,
+		mwrr: monthlyBuy ? getMwrr(monthlyBuy) : undefined,
 		stdev: getStdev(singleBuy),
 	};
 }
@@ -208,7 +208,7 @@ export function runBacktest(portfolio: Portfolio): Backtest {
 
 	console.log(`Running backtest on ${assetsPoints[0].length} points`);
 
-	const monthlyBuy = getPortfolioData(portfolio, assetsPoints);
+	const monthlyBuy = portfolio.monthlyCash > 0 ? getPortfolioData(portfolio, assetsPoints) : null;
 	const singleBuy = getPortfolioData(
 		{
 			...portfolio,
@@ -219,7 +219,7 @@ export function runBacktest(portfolio: Portfolio): Backtest {
 
 	const analysis = analyseData(monthlyBuy, singleBuy);
 	const backtest: Backtest = {
-		dataPoints: monthlyBuy,
+		dataPoints: monthlyBuy || singleBuy,
 		analysis,
 	};
 

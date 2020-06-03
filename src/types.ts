@@ -30,9 +30,11 @@ export interface PortfolioDataPoint {
 
 export interface PortfolioAnalysis {
 	cagr: number;
-	twrr: number;
-	mdm: number;
-	mwrr: number;
+	// mdm: number;
+	// Only set on monthly contributions
+	twrr?: number;
+	// Only set on monthly contributions
+	mwrr?: number;
 	stdev: number;
 }
 

@@ -22,8 +22,20 @@ const assetsOptions: CascaderOptionType[] = [
 				label: "MSCI World",
 			},
 			{
+				value: "msci.em",
+				label: "MSCI Emerging Market",
+			},
+			{
 				value: "msci.world-small-cap",
 				label: "MSCI World Small Cap",
+			},
+			{
+				value: "msci.eu-small-cap",
+				label: "MSCI EU Small Cap",
+			},
+			{
+				value: "msci.us-small-cap",
+				label: "MSCI US Small Cap",
 			},
 		],
 	},
