@@ -80,7 +80,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 					<Component {...pageProps} />
 				</InnerContent>
 			</Content>
-			<Footer>Next-App-Template - 2020</Footer>
+			<Footer>Retro Indexes (v0.1.0)</Footer>
 		</LayoutContainer>
 	);
 }
