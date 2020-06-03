@@ -3,3 +3,5 @@ node_modules
 /*.*
 !package.json
 !next.config.js
+!yarn.lock
+!tsconfig.json
