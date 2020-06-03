@@ -1,12 +1,11 @@
 import React from "react";
-import { Row, Col, Card, Statistic, Tooltip, Popover } from "antd";
+import { Row, Col, Card, Statistic, Popover } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 
-import { Backtest, Portfolio } from "../types";
+import { Backtest } from "../types";
 
 interface BacktestStatsProps {
 	backtest: Backtest;
-	portfolio: Portfolio;
 }
 
 interface MoreInfoProps {
